@@ -57,13 +57,12 @@ struct ethnetnetaddr {
 } localEthnetAddr;
 
 static uint32_t udpPort = 0;
-static int UDPChannel = 0;						// Channel used by UDP connection
 static bool isEthnetServer = false;
 //static bool isEthnetConnected = false;
 static IPaddress ethnetServerIp;  // IPAddress for server's listening port
 static IPaddress ethnetServConnIp;			// IPAddress for client connection to server
 static UDPsocket ethnetServerSocket;  // Listening server socket
-static UDPsocket ethnetClientSocket;
+//static UDPsocket ethnetClientSocket;
 //static uint8_t recvBuffer[ETHNETBUFFERSIZE];	// Incoming packet buffer
 
 static packetBuffer incomingPacket;
@@ -100,12 +99,7 @@ bool ETHNET_isConnectedToServer(Bits tableNum, IPaddress ** ptrAddr) {
 	return false;
 }
 
-static void ETHNET_ClientLoop(void) {
-	//TODO
-}
-
 static void ETHNET_ServerLoop() {
-	//TODO
 }
 
 void ETHNET_StopServer() {
@@ -115,6 +109,7 @@ void ETHNET_StopServer() {
 
 bool ETHNET_StartServer(uint16_t portnum) {
 	if(!SDLNet_ResolveHost(&ethnetServerIp, NULL, portnum)) {
+	
 		//serverSocketSet = SDLNet_AllocSocketSet(SOCKETTABLESIZE);
 		ethnetServerSocket = SDLNet_UDP_Open(portnum);
 		if(!ethnetServerSocket) return false;
@@ -126,36 +121,12 @@ bool ETHNET_StartServer(uint16_t portnum) {
 }
 
 static bool ConnectToServer(char const *strAddr) {
-	int numsent;
-	UDPpacket regPacket;
-	if(!SDLNet_ResolveHost(&ethnetServConnIp, strAddr, (uint16_t)udpPort)) {
-		// Select an anonymous UDP port
-		ethnetClientSocket = SDLNet_UDP_Open(0);
-		if(ethnetClientSocket) {
-			// Bind UDP port to address to channel
-			UDPChannel = SDLNet_UDP_Bind(ethnetClientSocket,-1,&ethnetServConnIp);
-
-			LOG_MSG("ETHNET: Connected to server.");
-
-			incomingPacket.connected = true;
-			TIMER_AddTickHandler(&ETHNET_ClientLoop);
-			return true;
-		} else {
-			LOG_MSG("ETHNET: Unable to open socket");
-		}
-	} else {
-		LOG_MSG("ETHNET: Unable resolve connection to server");
-	}
+	(void)strAddr;
 	return false;
 }
 
 static void DisconnectFromServer(bool unexpected) {
-	if(unexpected) LOG_MSG("ETHNET: Server disconnected unexpectedly");
-	if(incomingPacket.connected) {
-		incomingPacket.connected = false;
-		TIMER_DelTickHandler(&ETHNET_ClientLoop);
-		SDLNet_UDP_Close(ethnetClientSocket);
-	}
+	(void)unexpected;
 }
 
 class ETHNET : public Program {
@@ -325,4 +296,3 @@ public:
 void ETHNET_ProgramStart(Program * * make) {
 	*make=new ETHNET;
 }
-
